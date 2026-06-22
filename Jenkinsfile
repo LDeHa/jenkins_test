@@ -4,25 +4,39 @@ node {
             checkout scm
         }
 
-        stage('Build') {
+        stage('Install') {
             try {
                 bat 'npm install'
-                bat 'npm run build'
             } catch (e) {
-                error "Build failed: ${e}"
+                error "Install failed: ${e}"
             }
         }
 
-        stage('Test') {
-            def testsPassed = bat(
-                script: 'set CI=true && npm test -- --watchAll=false',
-                returnStatus: true
-            )
+        parallel(
+            Build: {
+                stage('Build') {
+                    try {
+                        echo "Build running on ${env.NODE_NAME}"
+                        bat 'npm run build'
+                    } catch (e) {
+                        error "Build failed: ${e}"
+                    }
+                }
+            },
+            Test: {
+                stage('Test') {
+                    echo "Test running on ${env.NODE_NAME}"
+                    def testsPassed = bat(
+                        script: 'set CI=true && npm test -- --watchAll=false',
+                        returnStatus: true
+                    )
 
-            if (testsPassed != 0) {
-                error 'Test failed!'
+                    if (testsPassed != 0) {
+                        error 'Test failed!'
+                    }
+                }
             }
-        }
+        )
 
         stage('Deploy') {
             echo 'Deploy stage: build output is ready.'
