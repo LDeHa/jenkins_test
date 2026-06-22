@@ -1,38 +1,47 @@
 pipeline {
     agent any
-    stages{
-        stage("Checkout"){
-            steps{
+
+    stages {
+        stage('Checkout') {
+            steps {
                 checkout scm
             }
         }
-        stage("install"){
-            steps{
-                //bat 'npm test'
+
+        stage('Install') {
+            steps {
+                bat 'npm install'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                bat 'npm run build'
+            }
+        }
+
+        stage('Test') {
+            steps {
                 bat 'set CI=true && npm test'
             }
         }
-        stage('Test'){
-            steps{
-                //bat 'npm test'
-                bat 'set CI=true && npm test'
-            }
-        }
-        stage('Start'){
-            when{
+
+        stage('Start') {
+            when {
                 branch 'main'
             }
-            steps{
+            steps {
                 bat 'npm start'
             }
         }
     }
-    post{
-        success{
-            echo 'Pipeline 성공적으로 완료!'
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
         }
-        failure{
-            echo 'Pipeline 실패!'
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
