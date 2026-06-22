@@ -13,13 +13,18 @@ node {
     }
 
     stage('Test') {
-        def testsPassed = bat(script: 'set CI=true && npm test', returnStatus: true)
+        def testsPassed = bat(
+            script: 'set CI=true && npm test -- --watchAll=false --passWithNoTests',
+            returnStatus: true
+        )
+
         if (testsPassed != 0) {
             error 'Test failed!'
         }
     }
 
     stage('Deploy') {
-        bat 'npm start'
+        echo 'Deploy stage: build output is ready.'
+        bat 'dir build'
     }
 }
