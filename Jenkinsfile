@@ -20,10 +20,6 @@ node {
     }
 
     stage('Deploy') {
-        if (env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main') {
-            bat 'npm start'
-        } else {
-            echo 'Skipped deploy because this is not the main branch'
-        }
+        bat 'npm start'
     }
 }
