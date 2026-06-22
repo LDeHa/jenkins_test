@@ -1,49 +1,29 @@
-pipeline {
-    agent any
+node {
+    stage('Checkout') {
+        checkout scm
+    }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Install') {
-            steps {
-                bat 'npm install'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                bat 'npm run build'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                bat 'set CI=true && npm test'
-            }
-        }
-
-        stage('Start') {
-            when {
-                expression {
-                    env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main'
-                }
-            }
-            steps {
-                bat 'npm start'
-            }
+    stage('Build') {
+        try {
+            bat 'npm install'
+            bat 'npm run build'
+        } catch (e) {
+            error "Build failed: ${e}"
         }
     }
 
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
+    stage('Test') {
+        def testsPassed = bat(script: 'set CI=true && npm test', returnStatus: true)
+        if (testsPassed != 0) {
+            error 'Test failed!'
         }
-        failure {
-            echo 'Pipeline failed!'
+    }
+
+    stage('Deploy') {
+        if (env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main') {
+            bat 'npm start'
+        } else {
+            echo 'Skipped deploy because this is not the main branch'
         }
     }
 }
