@@ -28,7 +28,9 @@ pipeline {
 
         stage('Start') {
             when {
-                branch 'main'
+                expression {
+                    env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main'
+                }
             }
             steps {
                 bat 'npm start'
